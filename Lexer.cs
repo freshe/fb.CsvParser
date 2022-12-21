@@ -35,10 +35,13 @@ internal class Lexer
         InQuotedField,
         InQuotedFieldEscapedQuote
     }
-    
-    private readonly StringBuilder _buffer = new();
+
     private readonly char _delimiterChar;
     private readonly char _escapeChar;
+    
+    private const int BufferSize = 16384;
+    private readonly StringBuilder _buffer = new();
+    private readonly List<string> _tokenPool = new(2);
     
     private State _state = State.Default;
     
@@ -48,103 +51,29 @@ internal class Lexer
         _escapeChar = escapeChar;
     }
 
-    public IEnumerable<string> GetTokens(string text)
+    public IEnumerable<string> GetTokens(Stream data)
     {
-        var tokens = Tokenize(text);
-
-        foreach (var token in tokens)
-        {
-            yield return token;
-        }
+        using var reader = new StreamReader(data, Encoding.UTF8);
+        var buffer = new char[BufferSize];
         
-        if (text[^1] == _delimiterChar)
+        int read;
+        var lastChar = '\0';
+        
+        while ( (read = reader.Read(buffer, 0, BufferSize)) > 0)
         {
-            yield return string.Empty;
-        }
-    }
-
-    private IEnumerable<string> Tokenize(string text)
-    {
-        for (var i = 0; i < text.Length; i++)
-        {
-            var c = text[i];
-            
-            switch (_state)
+            var chunk = new string(buffer, 0, read);
+            foreach (var c in chunk)
             {
-                case State.Default:
-                    if (c == _escapeChar)
+                var tokens = Tokenize(c);
+                if (tokens != null)
+                {
+                    foreach (var token in tokens)
                     {
-                        _state = State.InQuotedField;
+                        yield return token;
                     }
-                    else if (c == _delimiterChar)
-                    {
-                        yield return string.Empty;
-                    }
-                    else if (c == Const.NewlineCharacter)
-                    {
-                        yield return _buffer.ToString();
-                        _buffer.Clear();
-                        yield return Const.NewlineCharacter.ToString();
-                    }
-                    else if (c != Const.CarriageReturnCharacter)
-                    {
-                        _state = State.InField;
-                        _buffer.Append(c);
-                    }
-                    break;
-                case State.InField:
-                    if (c == _delimiterChar)
-                    {
-                        yield return _buffer.ToString();
-                        _buffer.Clear();
-                        _state = State.Default;
-                    }
-                    else if (c == Const.NewlineCharacter)
-                    {
-                        yield return _buffer.ToString();
-                        _buffer.Clear();
-                        yield return Const.NewlineCharacter.ToString();
-                        _state = State.Default;
-                    }
-                    else if (c != Const.CarriageReturnCharacter)
-                    {
-                        _buffer.Append(c);
-                    }
-                    break;
-                case State.InQuotedField:
-                    if (c == _escapeChar)
-                    {
-                        _state = State.InQuotedFieldEscapedQuote;
-                    }
-                    else if (c != Const.CarriageReturnCharacter)
-                    {
-                        _buffer.Append(c);
-                    }
-                    break;
-                case State.InQuotedFieldEscapedQuote:
-                    if (c == _escapeChar)
-                    {
-                        _buffer.Append(c);
-                        _state = State.InQuotedField;
-                    }
-                    else if (c == _delimiterChar)
-                    {
-                        yield return _buffer.ToString();
-                        _buffer.Clear();
-                        _state = State.Default;
-                    }
-                    else if (c == Const.NewlineCharacter)
-                    {
-                        yield return _buffer.ToString();
-                        _buffer.Clear();
-                        yield return Const.NewlineCharacter.ToString();
-                        _state = State.Default;
-                    }
-                    else
-                    {
-                        throw new Exception("Malformed CSV");
-                    }
-                    break;
+                }
+
+                lastChar = c;
             }
         }
 
@@ -153,5 +82,136 @@ internal class Lexer
             yield return _buffer.ToString();
             _buffer.Clear();
         }
+        
+        if (lastChar == _delimiterChar)
+        {
+            yield return string.Empty;
+        }
+    }
+
+    public IEnumerable<string> GetTokens(string text)
+    {
+        foreach (var c in text)
+        {
+            var tokens = Tokenize(c);
+            if (tokens != null)
+            {
+                foreach (var token in tokens)
+                {
+                    yield return token;
+                }
+            }
+        }
+
+        if (_buffer.Length > 0)
+        {
+            yield return _buffer.ToString();
+            _buffer.Clear();
+        }
+
+        if (text[^1] == _delimiterChar)
+        {
+            yield return string.Empty;
+        }
+    }
+    
+    private List<string>? Tokenize(char c)
+    {
+        switch (_state)
+        {
+            case State.Default:
+                if (c == _escapeChar)
+                {
+                    _state = State.InQuotedField;
+                }
+                else if (c == _delimiterChar)
+                {
+                    _tokenPool.Clear();
+                    _tokenPool.Add(string.Empty);
+                    return _tokenPool;
+                }
+                else if (c == Const.NewlineCharacter)
+                {
+                    var value = _buffer.ToString();
+                    _buffer.Clear();
+                    _tokenPool.Clear();
+                    _tokenPool.Add(value);
+                    _tokenPool.Add(Const.NewlineString);
+                    return _tokenPool;
+                }
+                else if (c != Const.CarriageReturnCharacter)
+                {
+                    _state = State.InField;
+                    _buffer.Append(c);
+                }
+                break;
+            case State.InField:
+                if (c == _delimiterChar)
+                {
+                    var value = _buffer.ToString();
+                    _buffer.Clear();
+                    _tokenPool.Clear();
+                    _tokenPool.Add(value);
+                    _state = State.Default;
+                    return _tokenPool;
+                }
+                if (c == Const.NewlineCharacter)
+                {
+                    var value = _buffer.ToString();
+                    _buffer.Clear();
+                    _tokenPool.Clear();
+                    _tokenPool.Add(value);
+                    _tokenPool.Add(Const.NewlineString);
+                    _state = State.Default;
+                    return _tokenPool;
+                }
+                if (c != Const.CarriageReturnCharacter)
+                {
+                    _buffer.Append(c);
+                }
+                break;
+            case State.InQuotedField:
+                if (c == _escapeChar)
+                {
+                    _state = State.InQuotedFieldEscapedQuote;
+                }
+                else if (c != Const.CarriageReturnCharacter)
+                {
+                    _buffer.Append(c);
+                }
+                break;
+            case State.InQuotedFieldEscapedQuote:
+                if (c == _escapeChar)
+                {
+                    _buffer.Append(c);
+                    _state = State.InQuotedField;
+                }
+                else if (c == _delimiterChar)
+                {
+                    var value = _buffer.ToString();
+                    _buffer.Clear();
+                    _tokenPool.Clear();
+                    _tokenPool.Add(value);
+                    _state = State.Default;
+                    return _tokenPool;
+                }
+                else if (c == Const.NewlineCharacter)
+                {
+                    var value = _buffer.ToString();
+                    _buffer.Clear();
+                    _tokenPool.Clear();
+                    _tokenPool.Add(value);
+                    _tokenPool.Add(Const.NewlineString);
+                    _state = State.Default;
+                    return _tokenPool;
+                }
+                else
+                {
+                    throw new Exception("Malformed CSV");
+                }
+                break;
+        }
+
+        return null;
     }
 }

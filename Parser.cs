@@ -34,6 +34,12 @@ public sealed class Parser
         var lexer = new Lexer(delimiterChar, escapeChar);
         _tokens = lexer.GetTokens(text);
     }
+    
+    public Parser(char delimiterChar, char escapeChar, Stream data)
+    {
+        var lexer = new Lexer(delimiterChar, escapeChar);
+        _tokens = lexer.GetTokens(data);
+    }
 
     public IEnumerable<string[]> GetRows()
     {
@@ -49,7 +55,10 @@ public sealed class Parser
                 _buffer.Add(token);
             }
         }
-        
-        yield return _buffer.ToArray();
+
+        if (_buffer.Count > 0)
+        {
+            yield return _buffer.ToArray();
+        }
     }
 }
