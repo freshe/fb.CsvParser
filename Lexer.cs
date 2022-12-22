@@ -39,7 +39,7 @@ internal class Lexer
     private readonly char _delimiterChar;
     private readonly char _escapeChar;
     
-    private const int BufferSize = 16384;
+    private const int BufferSize = 65536;
     private readonly StringBuilder _buffer = new();
     private readonly string[] _tokenPool = new string[2];
     private State _state = State.Default;
