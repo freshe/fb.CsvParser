@@ -109,7 +109,7 @@ internal class Lexer
             _buffer.Clear();
         }
 
-        if (text[^1] == _delimiterChar)
+        if (text.Length > 0 && text[^1] == _delimiterChar)
         {
             yield return string.Empty;
         }
