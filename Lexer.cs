@@ -41,8 +41,7 @@ internal class Lexer
     
     private const int BufferSize = 16384;
     private readonly StringBuilder _buffer = new();
-    private readonly List<string> _tokenPool = new(2);
-    
+    private readonly string[] _tokenPool = new string[2];
     private State _state = State.Default;
     
     public Lexer(char delimiterChar, char escapeChar)
@@ -59,20 +58,20 @@ internal class Lexer
         int read;
         var lastChar = '\0';
         
-        while ( (read = reader.Read(buffer, 0, BufferSize)) > 0)
+        while ((read = reader.Read(buffer, 0, BufferSize)) > 0)
         {
             var chunk = new string(buffer, 0, read);
             foreach (var c in chunk)
             {
-                var tokens = Tokenize(c);
-                if (tokens != null)
+                var count = Tokenize(c);
+                if (count > 0)
                 {
-                    foreach (var token in tokens)
+                    for (var i = 0; i < count; i++)
                     {
-                        yield return token;
+                        yield return _tokenPool[i];
                     }
                 }
-
+                
                 lastChar = c;
             }
         }
@@ -93,12 +92,12 @@ internal class Lexer
     {
         foreach (var c in text)
         {
-            var tokens = Tokenize(c);
-            if (tokens != null)
+            var count = Tokenize(c);
+            if (count > 0)
             {
-                foreach (var token in tokens)
+                for (var i = 0; i < count; i++)
                 {
-                    yield return token;
+                    yield return _tokenPool[i];
                 }
             }
         }
@@ -115,7 +114,7 @@ internal class Lexer
         }
     }
     
-    private List<string>? Tokenize(char c)
+    private int Tokenize(char c)
     {
         switch (_state)
         {
@@ -126,18 +125,16 @@ internal class Lexer
                 }
                 else if (c == _delimiterChar)
                 {
-                    _tokenPool.Clear();
-                    _tokenPool.Add(string.Empty);
-                    return _tokenPool;
+                    _tokenPool[0] = string.Empty;
+                    return 1;
                 }
                 else if (c == Const.NewlineCharacter)
                 {
                     var value = _buffer.ToString();
                     _buffer.Clear();
-                    _tokenPool.Clear();
-                    _tokenPool.Add(value);
-                    _tokenPool.Add(Const.NewlineString);
-                    return _tokenPool;
+                    _tokenPool[0] = value;
+                    _tokenPool[1] = Const.NewlineString;
+                    return 2;
                 }
                 else if (c != Const.CarriageReturnCharacter)
                 {
@@ -150,20 +147,18 @@ internal class Lexer
                 {
                     var value = _buffer.ToString();
                     _buffer.Clear();
-                    _tokenPool.Clear();
-                    _tokenPool.Add(value);
+                    _tokenPool[0] = value;
                     _state = State.Default;
-                    return _tokenPool;
+                    return 1;
                 }
                 if (c == Const.NewlineCharacter)
                 {
                     var value = _buffer.ToString();
                     _buffer.Clear();
-                    _tokenPool.Clear();
-                    _tokenPool.Add(value);
-                    _tokenPool.Add(Const.NewlineString);
+                    _tokenPool[0] = value;
+                    _tokenPool[1] = Const.NewlineString;
                     _state = State.Default;
-                    return _tokenPool;
+                    return 2;
                 }
                 if (c != Const.CarriageReturnCharacter)
                 {
@@ -190,20 +185,18 @@ internal class Lexer
                 {
                     var value = _buffer.ToString();
                     _buffer.Clear();
-                    _tokenPool.Clear();
-                    _tokenPool.Add(value);
+                    _tokenPool[0] = value;
                     _state = State.Default;
-                    return _tokenPool;
+                    return 1;
                 }
                 else if (c == Const.NewlineCharacter)
                 {
                     var value = _buffer.ToString();
                     _buffer.Clear();
-                    _tokenPool.Clear();
-                    _tokenPool.Add(value);
-                    _tokenPool.Add(Const.NewlineString);
+                    _tokenPool[0] = value;
+                    _tokenPool[1] = Const.NewlineString;
                     _state = State.Default;
-                    return _tokenPool;
+                    return 2;
                 }
                 else if (c != Const.CarriageReturnCharacter)
                 {
@@ -212,6 +205,6 @@ internal class Lexer
                 break;
         }
 
-        return null;
+        return 0;
     }
 }
