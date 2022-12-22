@@ -205,7 +205,7 @@ internal class Lexer
                     _state = State.Default;
                     return _tokenPool;
                 }
-                else
+                else if (c != Const.CarriageReturnCharacter)
                 {
                     throw new Exception("Malformed CSV");
                 }
