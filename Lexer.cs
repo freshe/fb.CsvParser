@@ -71,9 +71,9 @@ internal class Lexer
                         yield return _tokenPool[i];
                     }
                 }
-                
-                lastChar = c;
             }
+
+            lastChar = chunk[^1];
         }
 
         if (_buffer.Length > 0)
