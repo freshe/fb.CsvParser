@@ -15,8 +15,8 @@ public class BasicParsingTests
     [Test]
     public void TestParseEmptyStringShouldReturnNoElements()
     {
-        var parser = new Parser(DelimiterChar, EscapeChar, string.Empty);
-        var rows = parser.GetRows().ToList();
+        var parser = new Parser(DelimiterChar, EscapeChar);
+        var rows = parser.GetRows(string.Empty).ToList();
         
         Assert.That(rows.Count, Is.EqualTo(0));
     }
@@ -24,8 +24,8 @@ public class BasicParsingTests
     [Test]
     public void TestParseWhiteSpaceShouldReturnOneRowAndOneValue()
     {
-        var parser = new Parser(DelimiterChar, EscapeChar, " ");
-        var rows = parser.GetRows().ToList();
+        var parser = new Parser(DelimiterChar, EscapeChar);
+        var rows = parser.GetRows(" ").ToList();
         
         Assert.That(rows.Count, Is.EqualTo(1));
         Assert.That(rows[0].Length, Is.EqualTo(1));
@@ -36,8 +36,8 @@ public class BasicParsingTests
     public void TestParseSingleRow()
     {
         var csv = "a,b,c";
-        var parser = new Parser(DelimiterChar, EscapeChar, csv);
-        var rows = parser.GetRows().ToList();
+        var parser = new Parser(DelimiterChar, EscapeChar);
+        var rows = parser.GetRows(csv).ToList();
         
         Assert.That(rows.Count, Is.EqualTo(1));
         Assert.That(rows[0].Length, Is.EqualTo(3));
@@ -50,8 +50,8 @@ public class BasicParsingTests
     public void TestParseSingleRowWithEmptyHeader()
     {
         var csv = "a,b,c,";
-        var parser = new Parser(DelimiterChar, EscapeChar, csv);
-        var rows = parser.GetRows().ToList();
+        var parser = new Parser(DelimiterChar, EscapeChar);
+        var rows = parser.GetRows(csv).ToList();
         
         Assert.That(rows.Count, Is.EqualTo(1));
         Assert.That(rows[0].Length, Is.EqualTo(4));
@@ -65,8 +65,8 @@ public class BasicParsingTests
     public void TestParseSingleRowWithEmptyHeader2()
     {
         var csv = "a,,c,";
-        var parser = new Parser(DelimiterChar, EscapeChar, csv);
-        var rows = parser.GetRows().ToList();
+        var parser = new Parser(DelimiterChar, EscapeChar);
+        var rows = parser.GetRows(csv).ToList();
         
         Assert.That(rows.Count, Is.EqualTo(1));
         Assert.That(rows[0].Length, Is.EqualTo(4));
@@ -80,8 +80,8 @@ public class BasicParsingTests
     public void TestParseSingleRowWithEmptyHeader3()
     {
         var csv = ",b,c,";
-        var parser = new Parser(DelimiterChar, EscapeChar, csv);
-        var rows = parser.GetRows().ToList();
+        var parser = new Parser(DelimiterChar, EscapeChar);
+        var rows = parser.GetRows(csv).ToList();
         
         Assert.That(rows.Count, Is.EqualTo(1));
         Assert.That(rows[0].Length, Is.EqualTo(4));
@@ -95,8 +95,8 @@ public class BasicParsingTests
     public void TestParseMultipleRows()
     {
         var csv = "a,b,c\n1,2,3";
-        var parser = new Parser(DelimiterChar, EscapeChar, csv);
-        var rows = parser.GetRows().ToList();
+        var parser = new Parser(DelimiterChar, EscapeChar);
+        var rows = parser.GetRows(csv).ToList();
         
         Assert.That(rows.Count, Is.EqualTo(2));
         Assert.That(rows[0].Length, Is.EqualTo(3));
@@ -113,8 +113,8 @@ public class BasicParsingTests
     public void TestParseMultipleRowsLastWhereValueIsEmpty()
     {
         var csv = "a,b,c\n1,2,";
-        var parser = new Parser(DelimiterChar, EscapeChar, csv);
-        var rows = parser.GetRows().ToList();
+        var parser = new Parser(DelimiterChar, EscapeChar);
+        var rows = parser.GetRows(csv).ToList();
         
         Assert.That(rows.Count, Is.EqualTo(2));
         Assert.That(rows[0].Length, Is.EqualTo(3));
@@ -131,8 +131,8 @@ public class BasicParsingTests
     public void TestParseMultipleRowsWhereSomeValuesAreEmpty()
     {
         var csv = "a,b,\n1,,3";
-        var parser = new Parser(DelimiterChar, EscapeChar, csv);
-        var rows = parser.GetRows().ToList();
+        var parser = new Parser(DelimiterChar, EscapeChar);
+        var rows = parser.GetRows(csv).ToList();
         
         Assert.That(rows.Count, Is.EqualTo(2));
         Assert.That(rows[0].Length, Is.EqualTo(3));

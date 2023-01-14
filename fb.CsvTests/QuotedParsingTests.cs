@@ -17,8 +17,8 @@ public class QuotedParsingTests
     public void TestParseQuotedHeaders()
     {
         var csv = "\"a\",\"b\",\"c\"";
-        var parser = new Parser(DelimiterChar, EscapeChar, csv);
-        var rows = parser.GetRows().ToList();
+        var parser = new Parser(DelimiterChar, EscapeChar);
+        var rows = parser.GetRows(csv).ToList();
         
         Assert.That(rows.Count, Is.EqualTo(1));
         Assert.That(rows[0].Length, Is.EqualTo(3));
@@ -31,8 +31,8 @@ public class QuotedParsingTests
     public void TestParseQuotedHeadersAndNonQuotedValues()
     {
         var csv = "\"a\",\"b\",\"c\"\n1,2,3";
-        var parser = new Parser(DelimiterChar, EscapeChar, csv);
-        var rows = parser.GetRows().ToList();
+        var parser = new Parser(DelimiterChar, EscapeChar);
+        var rows = parser.GetRows(csv).ToList();
         
         Assert.That(rows.Count, Is.EqualTo(2));
         Assert.That(rows[0].Length, Is.EqualTo(3));
@@ -53,8 +53,8 @@ public class QuotedParsingTests
                 "Header 1,\"Header 2\",Header 3\n" +
                 "\"Value 1 with, comma\",Value 2,\"Value 3 \"";
         
-        var parser = new Parser(DelimiterChar, EscapeChar, csv);
-        var rows = parser.GetRows().ToList();
+        var parser = new Parser(DelimiterChar, EscapeChar);
+        var rows = parser.GetRows(csv).ToList();
         
         Assert.That(rows.Count, Is.EqualTo(2));
         Assert.That(rows[0].Length, Is.EqualTo(3));
@@ -75,8 +75,8 @@ public class QuotedParsingTests
             "Header 1,\"Header 2\",\"Header \"\"3\"\"\"\n" +
             "\"Value 1 with, \"\"comma\"\"\",Value 2,\"Value 3 \"";
         
-        var parser = new Parser(DelimiterChar, EscapeChar, csv);
-        var rows = parser.GetRows().ToList();
+        var parser = new Parser(DelimiterChar, EscapeChar);
+        var rows = parser.GetRows(csv).ToList();
         
         Assert.That(rows.Count, Is.EqualTo(2));
         Assert.That(rows[0].Length, Is.EqualTo(3));
@@ -97,8 +97,8 @@ public class QuotedParsingTests
             "Header 1,Header 2,Header 3\n" +
             "\"Value\n1\",Value 2,\"Value 3\nwith\nmultiple\n newlines \"";
         
-        var parser = new Parser(DelimiterChar, EscapeChar, csv);
-        var rows = parser.GetRows().ToList();
+        var parser = new Parser(DelimiterChar, EscapeChar);
+        var rows = parser.GetRows(csv).ToList();
         
         Assert.That(rows.Count, Is.EqualTo(2));
         Assert.That(rows[0].Length, Is.EqualTo(3));
@@ -119,8 +119,8 @@ public class QuotedParsingTests
             "Header 1,Header 2,\"Header\n3\nwith\t tab\"\n" +
             "\"Value 1 with\n(,.;\"\"'/\\€#&!@[]+-_—–´`^¨™*<>°§?=%)\",Value 2,\t";
         
-        var parser = new Parser(DelimiterChar, EscapeChar, csv);
-        var rows = parser.GetRows().ToList();
+        var parser = new Parser(DelimiterChar, EscapeChar);
+        var rows = parser.GetRows(csv).ToList();
         
         Assert.That(rows.Count, Is.EqualTo(2));
         Assert.That(rows[0].Length, Is.EqualTo(3));

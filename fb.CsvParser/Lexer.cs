@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2022 Fredrik Blank
+Copyright (c) 2022 Fredrik B
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -50,13 +50,73 @@ internal class Lexer
         _escapeChar = escapeChar;
     }
 
-    public IEnumerable<string> GetTokens(Stream data)
+    public IEnumerable<string> GetTokens(string text)
     {
-        using var reader = new StreamReader(data, Encoding.UTF8);
+        foreach (var c in text)
+        {
+            var count = Tokenize(c);
+            if (count > 0)
+            {
+                for (var i = 0; i < count; i++)
+                {
+                    yield return _tokenPool[i];
+                }
+            }
+        }
+
+        if (_buffer.Length > 0)
+        {
+            yield return _buffer.ToString();
+            _buffer.Clear();
+        }
+
+        if (text.Length > 0 && text[^1] == _delimiterChar)
+        {
+            yield return string.Empty;
+        }
+    }
+
+    public async IAsyncEnumerable<string> GetTokensAsync(TextReader reader)
+    {
         var buffer = new char[BufferSize];
-        
-        int read;
         var lastChar = '\0';
+        int read;
+        
+        while ((read = await reader.ReadAsync(buffer, 0, BufferSize)) > 0)
+        {
+            var chunk = new string(buffer, 0, read);
+            foreach (var c in chunk)
+            {
+                var count = Tokenize(c);
+                if (count > 0)
+                {
+                    for (var i = 0; i < count; i++)
+                    {
+                        yield return _tokenPool[i];
+                    }
+                }
+            }
+
+            lastChar = chunk[^1];
+        }
+
+        if (_buffer.Length > 0)
+        {
+            yield return _buffer.ToString();
+            _buffer.Clear();
+        }
+        
+        if (lastChar == _delimiterChar)
+        {
+            yield return string.Empty;
+        }
+    }
+
+    public IEnumerable<string> GetTokens(TextReader reader)
+    {
+        var buffer = new char[BufferSize];
+        var lastChar = '\0';
+        int read;
         
         while ((read = reader.Read(buffer, 0, BufferSize)) > 0)
         {
@@ -88,32 +148,6 @@ internal class Lexer
         }
     }
 
-    public IEnumerable<string> GetTokens(string text)
-    {
-        foreach (var c in text)
-        {
-            var count = Tokenize(c);
-            if (count > 0)
-            {
-                for (var i = 0; i < count; i++)
-                {
-                    yield return _tokenPool[i];
-                }
-            }
-        }
-
-        if (_buffer.Length > 0)
-        {
-            yield return _buffer.ToString();
-            _buffer.Clear();
-        }
-
-        if (text.Length > 0 && text[^1] == _delimiterChar)
-        {
-            yield return string.Empty;
-        }
-    }
-    
     private int Tokenize(char c)
     {
         switch (_state)

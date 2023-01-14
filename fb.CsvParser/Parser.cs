@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2022 Fredrik Blank
+Copyright (c) 2022 Fredrik B
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -26,24 +26,70 @@ namespace fb.CsvParser;
 
 public sealed class Parser
 {
-    private readonly IEnumerable<string> _tokens;
     private readonly List<string> _buffer = new();
+    private readonly char _delimiterChar;
+    private readonly char _escapeChar;
     
-    public Parser(char delimiterChar, char escapeChar, string text)
+    public Parser(char delimiterChar, char escapeChar)
     {
-        var lexer = new Lexer(delimiterChar, escapeChar);
-        _tokens = lexer.GetTokens(text);
-    }
-    
-    public Parser(char delimiterChar, char escapeChar, Stream data)
-    {
-        var lexer = new Lexer(delimiterChar, escapeChar);
-        _tokens = lexer.GetTokens(data);
+        _delimiterChar = delimiterChar;
+        _escapeChar = escapeChar;
     }
 
-    public IEnumerable<string[]> GetRows()
+    public IEnumerable<string[]> GetRows(string text)
     {
-        foreach (var token in _tokens)
+        var lexer = new Lexer(delimiterChar: _delimiterChar, escapeChar: _escapeChar);
+        var tokens = lexer.GetTokens(text);
+        
+        foreach (var token in tokens)
+        {
+            if (token == Const.NewlineString)
+            {
+                yield return _buffer.ToArray();
+                _buffer.Clear();
+            }
+            else
+            {
+                _buffer.Add(token);
+            }
+        }
+
+        if (_buffer.Count > 0)
+        {
+            yield return _buffer.ToArray();
+        }
+    }
+
+    public async IAsyncEnumerable<string[]> GetRowsAsync(TextReader reader)
+    {
+        var lexer = new Lexer(delimiterChar: _delimiterChar, escapeChar: _escapeChar);
+        var tokens = lexer.GetTokensAsync(reader);
+
+        await foreach (var token in tokens)
+        {
+            if (token == Const.NewlineString)
+            {
+                yield return _buffer.ToArray();
+                _buffer.Clear();
+            }
+            else
+            {
+                _buffer.Add(token);
+            }
+        }
+        
+        if (_buffer.Count > 0)
+        {
+            yield return _buffer.ToArray();
+        }
+    }
+
+    public IEnumerable<string[]> GetRows(TextReader reader)
+    {
+        var lexer = new Lexer(delimiterChar: _delimiterChar, escapeChar: _escapeChar);
+        var tokens = lexer.GetTokens(reader);
+        
+        foreach (var token in tokens)
         {
             if (token == Const.NewlineString)
             {
