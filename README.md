@@ -1,6 +1,6 @@
 # fb.CsvParser
 
-*A small CSV parser / lexer for .NET*
+*A small CSV reader / parser / lexer for .NET*
 
 This was mostly just a fun exercise.  
 
