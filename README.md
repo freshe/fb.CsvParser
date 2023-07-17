@@ -10,6 +10,6 @@ https://www.fredrikblank.com/csv-viewer/
 How to use:  
 
 ```csharp
-var parser = new fb.CsvParser.Parser(delimiterChar: ',', escapeChar: '"');
+var parser = new fb.CsvParser.Parser(delimiterChar: ',', quoteChar: '"');
 var data = parser.GetRows(text);
 ```

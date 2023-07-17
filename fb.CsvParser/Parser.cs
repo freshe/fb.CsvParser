@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2022 Fredrik B
+Copyright (c) Fredrik B
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -28,17 +28,17 @@ public sealed class Parser
 {
     private readonly List<string> _buffer = new();
     private readonly char _delimiterChar;
-    private readonly char _escapeChar;
+    private readonly char _quoteChar;
     
-    public Parser(char delimiterChar, char escapeChar)
+    public Parser(char delimiterChar, char quoteChar)
     {
         _delimiterChar = delimiterChar;
-        _escapeChar = escapeChar;
+        _quoteChar = quoteChar;
     }
 
     public IEnumerable<string[]> GetRows(string text)
     {
-        var lexer = new Lexer(delimiterChar: _delimiterChar, escapeChar: _escapeChar);
+        var lexer = new Lexer(delimiterChar: _delimiterChar, quoteChar: _quoteChar);
         var tokens = lexer.GetTokens(text);
         
         foreach (var token in tokens)
@@ -62,7 +62,7 @@ public sealed class Parser
 
     public async IAsyncEnumerable<string[]> GetRowsAsync(TextReader reader)
     {
-        var lexer = new Lexer(delimiterChar: _delimiterChar, escapeChar: _escapeChar);
+        var lexer = new Lexer(delimiterChar: _delimiterChar, quoteChar: _quoteChar);
         var tokens = lexer.GetTokensAsync(reader);
 
         await foreach (var token in tokens)
@@ -86,7 +86,7 @@ public sealed class Parser
 
     public IEnumerable<string[]> GetRows(TextReader reader)
     {
-        var lexer = new Lexer(delimiterChar: _delimiterChar, escapeChar: _escapeChar);
+        var lexer = new Lexer(delimiterChar: _delimiterChar, quoteChar: _quoteChar);
         var tokens = lexer.GetTokens(reader);
         
         foreach (var token in tokens)

@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2022 Fredrik B
+Copyright (c) Fredrik B
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -37,17 +37,17 @@ internal class Lexer
     }
 
     private readonly char _delimiterChar;
-    private readonly char _escapeChar;
+    private readonly char _quoteChar;
     
     private const int BufferSize = 65536;
     private readonly StringBuilder _buffer = new();
     private readonly string[] _tokenPool = new string[2];
     private State _state = State.Default;
     
-    public Lexer(char delimiterChar, char escapeChar)
+    public Lexer(char delimiterChar, char quoteChar)
     {
         _delimiterChar = delimiterChar;
-        _escapeChar = escapeChar;
+        _quoteChar = quoteChar;
     }
 
     public IEnumerable<string> GetTokens(string text)
@@ -55,6 +55,7 @@ internal class Lexer
         foreach (var c in text)
         {
             var count = Tokenize(c);
+            
             if (count > 0)
             {
                 for (var i = 0; i < count; i++)
@@ -85,6 +86,7 @@ internal class Lexer
         while ((read = await reader.ReadAsync(buffer, 0, BufferSize)) > 0)
         {
             var chunk = new string(buffer, 0, read);
+            
             foreach (var c in chunk)
             {
                 var count = Tokenize(c);
@@ -121,9 +123,11 @@ internal class Lexer
         while ((read = reader.Read(buffer, 0, BufferSize)) > 0)
         {
             var chunk = new string(buffer, 0, read);
+            
             foreach (var c in chunk)
             {
                 var count = Tokenize(c);
+                
                 if (count > 0)
                 {
                     for (var i = 0; i < count; i++)
@@ -153,7 +157,7 @@ internal class Lexer
         switch (_state)
         {
             case State.Default:
-                if (c == _escapeChar)
+                if (c == _quoteChar)
                 {
                     _state = State.InQuotedField;
                 }
@@ -200,7 +204,7 @@ internal class Lexer
                 }
                 break;
             case State.InQuotedField:
-                if (c == _escapeChar)
+                if (c == _quoteChar)
                 {
                     _state = State.InQuotedFieldEscapedQuote;
                 }
@@ -210,7 +214,7 @@ internal class Lexer
                 }
                 break;
             case State.InQuotedFieldEscapedQuote:
-                if (c == _escapeChar)
+                if (c == _quoteChar)
                 {
                     _buffer.Append(c);
                     _state = State.InQuotedField;
