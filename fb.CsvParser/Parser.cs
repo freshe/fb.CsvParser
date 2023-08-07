@@ -29,6 +29,12 @@ public sealed class Parser
     private readonly List<string> _buffer = new();
     private readonly char _delimiterChar;
     private readonly char _quoteChar;
+
+    public Parser()
+    {
+        _delimiterChar = Const.DefaultDelimiterChar;
+        _quoteChar = Const.DefaultQuoteChar;
+    }
     
     public Parser(char delimiterChar, char quoteChar)
     {

@@ -26,6 +26,8 @@ namespace fb.CsvParser;
 
 internal static class Const
 {
+    internal const char DefaultDelimiterChar = ',';
+    internal const char DefaultQuoteChar = '"';
     internal const string NewlineString = "\n";
     internal const char NewlineCharacter = '\n';
     internal const char CarriageReturnCharacter = '\r';

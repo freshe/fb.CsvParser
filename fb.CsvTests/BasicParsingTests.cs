@@ -44,6 +44,15 @@ public class BasicParsingTests
         Assert.That(rows[0][0], Is.EqualTo("a"));
         Assert.That(rows[0][1], Is.EqualTo("b"));
         Assert.That(rows[0][2], Is.EqualTo("c"));
+
+        var parser2 = new Parser();
+        var rows2 = parser2.GetRows(csv).ToList();
+        
+        Assert.That(rows2.Count, Is.EqualTo(1));
+        Assert.That(rows2[0].Length, Is.EqualTo(3));
+        Assert.That(rows2[0][0], Is.EqualTo("a"));
+        Assert.That(rows2[0][1], Is.EqualTo("b"));
+        Assert.That(rows2[0][2], Is.EqualTo("c"));
     }
     
     [Test]
