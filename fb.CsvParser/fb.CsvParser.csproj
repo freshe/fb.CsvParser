@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <ItemGroup>
-        <None Include="../README.md" Pack="true" PackagePath="\"/>
+        <None Include="../README.md" Pack="true" PackagePath="/"/>
     </ItemGroup>
     <PropertyGroup>
         <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
@@ -12,7 +12,7 @@
         <Copyright>Fredrik B</Copyright>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageProjectUrl>https://github.com/freshe/fb.CsvParser</PackageProjectUrl>
-        <PackageLicense>https://github.com/freshe/fb.CsvParser/blob/main/LICENSE</PackageLicense>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageTags>csv,csv-reader,csv-viewer,reader,read,parser,parse,viewer,view,lexer</PackageTags>
         <AssemblyVersion>1.0.0</AssemblyVersion>
         <FileVersion>1.0.0</FileVersion>
