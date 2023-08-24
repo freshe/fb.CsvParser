@@ -30,18 +30,33 @@ public sealed class Parser
     private readonly char _delimiterChar;
     private readonly char _quoteChar;
 
+    /// <summary>
+    /// Creates a new CSV parser instance with default delimiter and quote characters
+    /// Delimiter: ,
+    /// Quote: "
+    /// </summary>
     public Parser()
     {
         _delimiterChar = Const.DefaultDelimiterChar;
         _quoteChar = Const.DefaultQuoteChar;
     }
     
+    /// <summary>
+    /// Creates a new CSV parser instance with a custom delimiter and quote character
+    /// </summary>
+    /// <param name="delimiterChar"></param>
+    /// <param name="quoteChar"></param>
     public Parser(char delimiterChar, char quoteChar)
     {
         _delimiterChar = delimiterChar;
         _quoteChar = quoteChar;
     }
 
+    /// <summary>
+    /// Takes a CSV string and returns an enumerable (rows)
+    /// </summary>
+    /// <param name="text"></param>
+    /// <returns></returns>
     public IEnumerable<string[]> GetRows(string text)
     {
         var lexer = new Lexer(delimiterChar: _delimiterChar, quoteChar: _quoteChar);
@@ -66,6 +81,11 @@ public sealed class Parser
         }
     }
 
+    /// <summary>
+    /// Takes a CSV stream reader and returns an async enumerable (rows)
+    /// </summary>
+    /// <param name="reader"></param>
+    /// <returns></returns>
     public async IAsyncEnumerable<string[]> GetRowsAsync(TextReader reader)
     {
         var lexer = new Lexer(delimiterChar: _delimiterChar, quoteChar: _quoteChar);
@@ -90,6 +110,11 @@ public sealed class Parser
         }
     }
 
+    /// <summary>
+    /// Takes a CSV stream reader and returns an enumerable (rows)
+    /// </summary>
+    /// <param name="reader"></param>
+    /// <returns></returns>
     public IEnumerable<string[]> GetRows(TextReader reader)
     {
         var lexer = new Lexer(delimiterChar: _delimiterChar, quoteChar: _quoteChar);
